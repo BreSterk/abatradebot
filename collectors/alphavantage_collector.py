@@ -6,7 +6,8 @@ from .base_collector import BaseCollector
 from .models import Signal
 
 logger = logging.getLogger(__name__)
-AV_KEY = os.getenv("ALPHAVANTAGE_KEY", "")
+from config import settings
+AV_KEY = settings.alphavantage_key
 WATCHLIST = ["AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","SPY","QQQ","T","CARR","BAH","DVN"]
 
 class AlphaVantageCollector(BaseCollector):
@@ -24,7 +25,7 @@ class AlphaVantageCollector(BaseCollector):
 
     async def _fetch_news(self, ticker: str):
         url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&limit=5&apikey={AV_KEY}"
-        data = await self.fetch_json(url)
+        data = await self.fetch(url)
         if not data or "feed" not in data:
             return
         feed = data["feed"]

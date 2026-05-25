@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # System
     environment: str = "paper"
+    alphavantage_key: str = ""
     log_level: str = "INFO"
 
     # Hard Limits
