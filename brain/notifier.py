@@ -31,7 +31,7 @@ def notify_buy(ticker: str, conviction: float, thesis: str, entry_price: float):
 📝 <b>Tez:</b>
 {thesis[:300]}
 
-⚡ Trading AI"""
+A.B.A."""
     send_telegram(msg)
 
 def notify_sell(ticker: str, pnl_pct: float, reason: str, entry_price: float, exit_price: float):
@@ -49,7 +49,7 @@ def notify_sell(ticker: str, pnl_pct: float, reason: str, entry_price: float, ex
 📈 PnL: <b>{pnl_pct:+.2f}%</b>
 🔔 Sebep: {reason_text}
 
-⚡ Trading AI"""
+A.B.A."""
     send_telegram(msg)
 
 def notify_wait(ticker: str, reason: str):
@@ -57,5 +57,5 @@ def notify_wait(ticker: str, reason: str):
 
 {reason[:200]}
 
-⚡ Trading AI"""
+A.B.A."""
     send_telegram(msg)
