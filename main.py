@@ -92,7 +92,7 @@ async def analysis_loop(queue_manager, event_store):
             ).fetchone()
             conn.close()
             if prev:
-                context["previous_decision"] = dict(prev)
+                pass  # previous_decision kaldirildi
 
             decision = final.analyze(
                 ticker, signals,

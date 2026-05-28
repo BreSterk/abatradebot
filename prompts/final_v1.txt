@@ -16,7 +16,7 @@ ZORUNLU: Yanıtını sadece JSON formatında ver, başka hiçbir şey yazma:
   "conviction": 0.0-1.0,
   "uncertainty": 0.0-1.0,
   "ticker": "TICKER",
-  "position_size_pct": 0.0-0.25,
+  "position_size_pct": 0.05-0.15, (BUY ise minimum 0.05 ver, WAIT ise 0.0),
   "thesis": "neden bu karar",
   "counter_argument": "en güçlü karşı argüman",
   "invalidators": ["koşul1", "koşul2"],
