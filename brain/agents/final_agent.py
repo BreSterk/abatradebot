@@ -58,7 +58,7 @@ Final kararını ver.
                 thesis=data.get("thesis") or "",
                 counter_argument=data.get("counter_argument") or "",
                 invalidators=data.get("invalidators") or [],
-                time_horizon_days=int(data.get("time_horizon_days", 0)),
+                time_horizon_days=int(data.get("time_horizon_days") or 0),
                 tp_logic=data.get("tp_logic") or "",
                 sl_logic=data.get("sl_logic") or "",
                 missing_data=data.get("missing_data", ""),

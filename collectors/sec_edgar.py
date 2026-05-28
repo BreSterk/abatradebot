@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from datetime import datetime
 from .base_collector import BaseCollector
 from .models import Signal
@@ -22,6 +23,24 @@ class SECEdgarCollector(BaseCollector):
             await self._fetch_filings(form_type)
             await asyncio.sleep(2)
 
+    async def _fetch_filing_text(self, accession_no: str, cik: str) -> str:
+        try:
+            import aiohttp
+            clean_acc = accession_no.replace("-", "")
+            clean_cik = str(int(cik))
+            url = f"https://www.sec.gov/Archives/edgar/data/{clean_cik}/{clean_acc}/{accession_no}.txt"
+            headers = {"User-Agent": "TradingAI/1.0 contact@example.com"}
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as r:
+                    if r.status == 200:
+                        data = await r.text()
+                        text = re.sub(r'<[^>]+>', ' ', data)
+                        text = re.sub(r'\s+', ' ', text).strip()
+                        return text[:2000]
+        except Exception as e:
+            logger.debug(f"Filing text fetch hatasi: {e}")
+        return ""
+
     async def _fetch_filings(self, form_type: str):
         url = "https://efts.sec.gov/LATEST/search-index"
         params = {
@@ -37,7 +56,7 @@ class SECEdgarCollector(BaseCollector):
             return
 
         hits = data.get("hits", {}).get("hits", [])
-        logger.info(f"SEC: {form_type} için {len(hits)} filing bulundu")
+        logger.info(f"SEC: {form_type} icin {len(hits)} filing bulundu")
 
         for hit in hits:
             filing_id = hit.get("_id", "")
@@ -47,13 +66,10 @@ class SECEdgarCollector(BaseCollector):
 
             source = hit.get("_source", {})
 
-            # Ticker al
             tickers = source.get("tickers", [])
             if not tickers:
-                # display_names'den çıkar: "Ondas Inc. (ONDS) (CIK ...)"
                 display_names = source.get("display_names", [])
                 if display_names:
-                    import re
                     match = re.search(r'\(([A-Z]{1,5})\)', display_names[0])
                     if match and not match.group(1).startswith("CIK"):
                         tickers = [match.group(1)]
@@ -64,6 +80,20 @@ class SECEdgarCollector(BaseCollector):
             ticker = tickers[0].upper()
             company = source.get("display_names", [""])[0] if source.get("display_names") else ""
             form_info = WATCHED_FORMS.get(form_type, {})
+
+            filing_text = ""
+            if form_type == "8-K":
+                try:
+                    entity_id = source.get("ciks", [""])[0].lstrip("0")
+                    acc = source.get("adsh", filing_id)
+                    if entity_id and acc:
+                        filing_text = await self._fetch_filing_text(acc, entity_id)
+                except Exception as e:
+                    logger.debug(f"Filing text hatasi: {e}")
+
+            raw_text = f"{form_type} filing: {company}"
+            if filing_text:
+                raw_text = f"{form_type} filing: {company}\n\nICERIK:\n{filing_text[:1500]}"
 
             signal = Signal(
                 ticker=ticker,
@@ -76,14 +106,15 @@ class SECEdgarCollector(BaseCollector):
                 expected_horizon_hours=form_info.get("horizon", 24),
                 decay_rate=form_info.get("decay", 0.10),
                 catalyst_type=form_info.get("catalyst", "news"),
-                raw_text=f"{form_type} filing: {company}",
+                raw_text=raw_text,
                 metadata={
                     "form_type": form_type,
                     "filing_id": filing_id,
                     "company": company,
                     "filed_at": source.get("file_date", ""),
+                    "has_content": bool(filing_text),
                 }
             )
 
             await self.queue.put(signal)
-            logger.info(f"SEC sinyal: {ticker} ({company[:20]}) - {form_type}")
+            logger.info(f"SEC sinyal: {ticker} ({company[:20]}) - {form_type} | icerik: {'var' if filing_text else 'yok'}")

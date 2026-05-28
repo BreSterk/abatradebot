@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 # Kaynak ağırlıkları
-TIER_1_SOURCES = {"senate_trades", "sec_edgar_form4", "usa_spending"}
+TIER_1_SOURCES = {"senate_trades", "sec_edgar_form4", "usa_spending", "sec_edgar"}
 TIER_2_SOURCES = {"sec_edgar", "fed_fomc", "earnings"}
 TIER_3_SOURCES = {"reddit_wallstreetbets", "reddit_investing", "reddit_stocks", 
                    "reddit_options", "news", "marketwatch", "yahoo_finance"}
