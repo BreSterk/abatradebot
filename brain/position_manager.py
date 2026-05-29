@@ -44,6 +44,12 @@ class PositionManager:
         logger.info(f"POZİSYON AÇILDI: {decision.ticker} | giriş: ${entry_price:.2f} | tutar: ${dollar_amount:.0f} ({size_pct}%) | {shares:.2f} adet")
         return position_id
 
+
+    def _update_peak_pnl(self, position_id: str, peak_pnl: float):
+        conn = get_connection()
+        conn.execute("UPDATE positions SET peak_pnl = ? WHERE id = ?", (peak_pnl, position_id))
+        conn.commit()
+        conn.close()
     def get_open_positions(self):
         conn = get_connection()
         rows = conn.execute("SELECT * FROM positions WHERE status = 'open'").fetchall()
@@ -102,20 +108,46 @@ class PositionManager:
             entry_price = pos["entry_price"]
             pnl_pct = ((current_price - entry_price) / entry_price) * 100
             self.update_price(ticker, current_price)
+
+            # Trailing stop seviyeleri
+            # 8'e ulaşınca 4'ü koru, 12'ye ulaşınca 7'yi koru, 15'e ulaşınca 10'u koru
+            peak_pnl = pos.get("peak_pnl", pnl_pct)
+            if pnl_pct > peak_pnl:
+                peak_pnl = pnl_pct
+                self._update_peak_pnl(pos["id"], peak_pnl)
+
+            trailing_sl = None
+            if peak_pnl >= 15:
+                trailing_sl = 10.0
+            elif peak_pnl >= 12:
+                trailing_sl = 7.0
+            elif peak_pnl >= 8:
+                trailing_sl = 4.0
+
+            if trailing_sl is not None and pnl_pct <= trailing_sl:
+                self.close_position(pos["id"], current_price, f"TRAILING_STOP_{trailing_sl:.0f}")
+                continue
+
+            # Sabit TP +15%
             if pnl_pct >= 15:
                 self.close_position(pos["id"], current_price, "TP_HIT")
                 continue
+
+            # Sabit SL -7%
             if pnl_pct <= -7:
                 self.close_position(pos["id"], current_price, "SL_HIT")
                 continue
+
             opened_at = datetime.fromisoformat(pos["opened_at"])
             horizon_days = pos.get("time_horizon_days", 5)
             if datetime.utcnow() > opened_at + timedelta(days=horizon_days):
                 self.close_position(pos["id"], current_price, "TIME_EXIT")
                 continue
+
             dollar_amount = PAPER_CAPITAL * (pos["size_pct"] / 100)
             pnl_dollar = dollar_amount * (pnl_pct / 100)
-            logger.info(f"POZİSYON: {ticker} | PnL: {pnl_pct:+.2f}% ({pnl_dollar:+.0f}$) | Giriş: ${entry_price:.2f} | Şimdi: ${current_price:.2f}")
+            trail_info = f" | peak: {peak_pnl:+.1f}% | trailing_sl: {trailing_sl}%" if trailing_sl else ""
+            logger.info(f"POZİSYON: {ticker} | PnL: {pnl_pct:+.2f}% ({pnl_dollar:+.0f}$){trail_info}")
 
     def get_stats(self):
         conn = get_connection()

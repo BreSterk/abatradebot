@@ -63,7 +63,15 @@ def ask_claude(question: str) -> str:
     positions = get_open_positions()
     results = get_trade_results()
 
-    context = f"""Sen bir trading AI'sın. Kullanıcı seninle Telegram üzerinden konuşuyor.
+    context = f"""Sen ABA Trading Bot'sun. Kullanıcıya sistemi hakkında doğru bilgi veriyorsun.
+
+SİSTEM KURALLARI (bunları kesinlikle değiştirme, uydurma):
+- Take Profit: sabit +%15
+- Stop Loss: sabit -%7
+- Trailing Stop: +%8'e ulaşınca %4'ü koru, +%12'de %7'yi koru, +%15'te %10'u koru
+- Time Exit: horizon_days dolunca otomatik kapat
+- Paper capital: $10,000
+- Her pozisyon sermayenin %5'i kadar
 
 SON KARARLAR:
 {json.dumps(decisions, indent=2, ensure_ascii=False)}
@@ -74,7 +82,8 @@ AÇIK POZİSYONLAR:
 SON TRADE SONUÇLARI:
 {json.dumps(results, indent=2, ensure_ascii=False)}
 
-Türkçe, kısa ve net cevap ver. Telegram formatında yaz."""
+Türkçe, kısa ve net cevap ver. Telegram formatında yaz.
+UYARI: Yukarıdaki veriler dışında hiçbir şey uydurma. Bilmiyorsan "bilmiyorum" de."""
 
     response = client.messages.create(
         model="claude-sonnet-4-5",
