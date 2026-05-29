@@ -18,6 +18,11 @@ class PositionManager:
         position_id = str(uuid.uuid4())[:8]
         
         size_pct = decision.position_size_pct or 5.0
+        # Agent 0.05-0.15 arasi deger verirse gercekte % demek, duzelt
+        if size_pct < 1.0:
+            size_pct = size_pct * 100
+        # Max %15, min %3
+        size_pct = max(3.0, min(15.0, size_pct))
         dollar_amount = PAPER_CAPITAL * (size_pct / 100)
         shares = dollar_amount / entry_price if entry_price > 0 else 0
         

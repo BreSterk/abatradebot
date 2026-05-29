@@ -129,9 +129,12 @@ def main():
                     }
                 )
                 
+        except KeyboardInterrupt:
+            break
         except Exception as e:
             logger.error(f"Hata: {e}")
-            time.sleep(5)
+            time.sleep(10)
+            continue
 
 if __name__ == "__main__":
     main()
