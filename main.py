@@ -1,3 +1,15 @@
+
+def is_market_open():
+    from datetime import datetime
+    import pytz
+    et = pytz.timezone('America/New_York')
+    now = datetime.now(et)
+    if now.weekday() >= 5:  # Cumartesi=5, Pazar=6
+        return False
+    market_open = now.replace(hour=9, minute=30, second=0)
+    market_close = now.replace(hour=16, minute=0, second=0)
+    return market_open <= now <= market_close
+
 import asyncio
 import logging
 import os
@@ -52,6 +64,10 @@ async def analysis_loop(queue_manager, event_store):
         except Exception as e:
             logger.error(f"Pozisyon kontrol hatası: {e}")
 
+        if not is_market_open():
+            logger.info("Piyasa kapalı, analiz bekleniyor...")
+            await asyncio.sleep(60)
+            continue
         candidates = queue_manager.get_candidates()
         if not candidates:
             logger.info("Analiz edilecek candidate yok, bekleniyor...")
