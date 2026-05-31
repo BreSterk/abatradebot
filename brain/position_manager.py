@@ -104,6 +104,13 @@ class PositionManager:
         return pnl_pct
 
     def check_exits(self, current_prices: dict):
+        from datetime import datetime
+        import pytz
+        et = pytz.timezone('America/New_York')
+        now = datetime.now(et)
+        if now.weekday() >= 5:
+            return  # Hafta sonu TP/SL kontrolü yapma
+
         positions = self.get_open_positions()
         for pos in positions:
             ticker = pos["ticker"]

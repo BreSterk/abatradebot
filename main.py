@@ -165,6 +165,16 @@ async def queue_listener(queue, queue_manager, event_store):
 async def main():
     setup_logging()
     logger = logging.getLogger(__name__)
+    
+    # Piyasa kapali ise bekle
+    while not is_market_open():
+        import datetime
+        import pytz
+        et = pytz.timezone('America/New_York')
+        now = datetime.datetime.now(et)
+        logger.info(f"Piyasa kapali ({now.strftime('%A %H:%M')} ET), bekleniyor...")
+        await asyncio.sleep(300)
+    
     logger.info("Trading AI başlatılıyor...")
 
     from database.db import init_db
