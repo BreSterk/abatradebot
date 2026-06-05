@@ -150,13 +150,18 @@ async def analysis_loop(queue_manager, event_store):
                             else:
                                 decision.position_size_pct = 1.0
 
-                            hist = yf.Ticker(ticker).history(period="1d")
-                            if not hist.empty:
-                                entry_price = float(hist["Close"].iloc[-1])
-                                position_manager.open_position(decision, entry_price)
-                                from brain.notifier import notify_buy
-                                notify_buy(ticker, decision.conviction, decision.thesis, entry_price)
-                                logger.info(f"Pozisyon açıldı: {ticker} | size: %{decision.position_size_pct} | VIX: {vix:.1f}")
+                            ticker_info = yf.Ticker(ticker).info
+                            market_cap = ticker_info.get("marketCap", 0) or 0
+                            if market_cap > 20_000_000_000:
+                                logger.info(f"{ticker} ${market_cap/1e9:.0f}B > $20B, atlaniyor")
+                            else:
+                                hist = yf.Ticker(ticker).history(period="1d")
+                                if not hist.empty:
+                                    entry_price = float(hist["Close"].iloc[-1])
+                                    position_manager.open_position(decision, entry_price)
+                                    from brain.notifier import notify_buy
+                                    notify_buy(ticker, decision.conviction, decision.thesis, entry_price)
+                                    logger.info(f"Pozisyon açıldı: {ticker} | size: %{decision.position_size_pct} | VIX: {vix:.1f}")
                 except Exception as e:
                     logger.error(f"Pozisyon açma hatası: {e}")
 
