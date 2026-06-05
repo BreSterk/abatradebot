@@ -23,16 +23,19 @@ for p in positions:
     print(f"  {p['ticker']:<6} {p['entry_price']:>7.2f} -> {current:>7.2f}  {pnl_pct:+.2f}%  ({pnl_dollar:+.0f}$)")
 
 print("---------------------------------------")
+
 from database.db import get_connection
 conn = get_connection()
-realized = sum(r[0] for r in conn.execute("SELECT pnl_pct FROM trade_results").fetchall())
+trade_rows = conn.execute("SELECT tr.pnl_pct, p.size_pct FROM trade_results tr JOIN positions p ON tr.position_id = p.id").fetchall()
 rows = conn.execute("SELECT p.ticker, tr.pnl_pct, tr.exit_reason FROM trade_results tr JOIN positions p ON tr.position_id = p.id ORDER BY tr.timestamp DESC LIMIT 10").fetchall()
 conn.close()
-realized_dollar = CAPITAL * (realized / 100)
+
+realized = sum(CAPITAL * ((r[1]*100 if r[1] < 1.0 else r[1])/100) * (r[0]/100) for r in trade_rows)
 print(f"  UNREALIZED : {total_unrealized:+.2f}$")
-print(f"  REALIZED   : {realized_dollar:+.2f}$")
-print(f"  TOPLAM     : {total_unrealized + realized_dollar:+.2f}$")
-print(f"  SERMAYE    : {CAPITAL + total_unrealized + realized_dollar:.2f}$")
+print(f"  REALIZED   : {realized:+.2f}$")
+print(f"  TOPLAM     : {total_unrealized + realized:+.2f}$")
+print(f"  SERMAYE    : {CAPITAL + total_unrealized + realized:.2f}$")
+
 print("\nGECMIS TRADELER:")
 print("---------------------------------------")
 for r in rows:

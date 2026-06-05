@@ -189,7 +189,17 @@ class PositionManager:
         pnls = [r["pnl_pct"] for r in results]
         kazanan = sum(1 for p in pnls if p > 0)
         toplam_pnl_pct = sum(pnls)
-        toplam_pnl_dollar = PAPER_CAPITAL * (toplam_pnl_pct / 100)
+        # Dolar hesabi: her trade icin gercek size_pct kullan
+        conn2 = get_connection()
+        trade_details = conn2.execute('''
+            SELECT tr.pnl_pct, p.size_pct FROM trade_results tr
+            JOIN positions p ON tr.position_id = p.id
+        ''').fetchall()
+        conn2.close()
+        toplam_pnl_dollar = sum(
+            PAPER_CAPITAL * ((row[1]*100 if row[1] < 1.0 else row[1]) / 100) * (row[0] / 100)
+            for row in trade_details
+        )
         guncel_sermaye = PAPER_CAPITAL + toplam_pnl_dollar
         
         return {
