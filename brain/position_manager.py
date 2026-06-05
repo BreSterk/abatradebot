@@ -111,6 +111,22 @@ class PositionManager:
         if now.weekday() >= 5:
             return  # Hafta sonu TP/SL kontrolü yapma
 
+        # VIX > 30 ise tüm pozisyonları kapat
+        try:
+            import yfinance as yf
+            vix_data = yf.Ticker("^VIX").history(period="1d")
+            vix = float(vix_data["Close"].iloc[-1]) if not vix_data.empty else 20
+            if vix >= 30:
+                logger.warning(f"VIX {vix:.1f} >= 30, tüm pozisyonlar kapatılıyor!")
+                positions = self.get_open_positions()
+                for pos in positions:
+                    ticker = pos["ticker"]
+                    if ticker in current_prices:
+                        self.close_position(pos["id"], current_prices[ticker], f"VIX_RISK_OFF_{vix:.0f}")
+                return
+        except Exception as e:
+            logger.debug(f"VIX check hatasi: {e}")
+
         positions = self.get_open_positions()
         for pos in positions:
             ticker = pos["ticker"]

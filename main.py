@@ -128,14 +128,36 @@ async def analysis_loop(queue_manager, event_store):
             # BUY kararında pozisyon aç
             if decision.decision == "BUY" and decision.conviction >= 0.65:
                 try:
-                    hist = yf.Ticker(ticker).history(period="1d")
-                    if not hist.empty:
-                        entry_price = float(hist["Close"].iloc[-1])
-                        position_manager.open_position(decision, entry_price)
-                        from brain.notifier import notify_buy
-                        notify_buy(ticker, decision.conviction, decision.thesis, entry_price)
+                    # Max pozisyon kontrolu
+                    open_count = len(position_manager.get_open_positions())
+                    if open_count >= 20:
+                        logger.info(f"Max pozisyon (20) doldu, {ticker} atlanıyor")
+                    else:
+                        # VIX kontrolu
+                        import yfinance as yf
+                        vix_data = yf.Ticker("^VIX").history(period="1d")
+                        vix = float(vix_data["Close"].iloc[-1]) if not vix_data.empty else 20
+                        if vix >= 25:
+                            logger.info(f"VIX {vix:.1f} >= 25, yeni pozisyon açılmıyor")
+                        else:
+                            # Conviction'a gore position size
+                            conv = decision.conviction
+                            if conv >= 0.85:
+                                decision.position_size_pct = 4.0
+                            elif conv >= 0.75:
+                                decision.position_size_pct = 2.0
+                            else:
+                                decision.position_size_pct = 1.0
+
+                            hist = yf.Ticker(ticker).history(period="1d")
+                            if not hist.empty:
+                                entry_price = float(hist["Close"].iloc[-1])
+                                position_manager.open_position(decision, entry_price)
+                                from brain.notifier import notify_buy
+                                notify_buy(ticker, decision.conviction, decision.thesis, entry_price)
+                                logger.info(f"Pozisyon açıldı: {ticker} | size: %{decision.position_size_pct} | VIX: {vix:.1f}")
                 except Exception as e:
-                    logger.error(f"Fiyat çekme hatası: {e}")
+                    logger.error(f"Pozisyon açma hatası: {e}")
 
             event_store.save_decision(decision)
             queue_manager.mark_analyzed(ticker)
