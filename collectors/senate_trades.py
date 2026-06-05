@@ -16,7 +16,17 @@ class SenateTradesCollector(BaseCollector):
 
     async def _fetch_quiver(self):
         url = "https://api.quiverquant.com/beta/live/congresstrading"
-        data = await self.fetch(url)
+        import aiohttp
+        try:
+            async with aiohttp.ClientSession(headers={"Accept": "application/json", "X-CSRFToken": "null"}) as session:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as r:
+                    if r.status != 200:
+                        logger.warning(f"SENATE_TRADES: HTTP {r.status}")
+                        return
+                    data = await r.json(content_type=None)
+        except Exception as e:
+            logger.error(f"SENATE_TRADES fetch hatasi: {e}")
+            return
 
         if not data:
             logger.warning("SENATE_TRADES: Veri gelmedi")
