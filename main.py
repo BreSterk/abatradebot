@@ -129,6 +129,27 @@ async def analysis_loop(queue_manager, event_store):
             EXCLUDED = {"SPY", "QQQ", "IWM", "DIA", "VTI", "VOO"}
             if decision.decision == "BUY" and decision.conviction >= 0.65 and ticker not in EXCLUDED:
                 try:
+                    # SPY gunluk filtre
+                    import yfinance as yf
+                    _spy = yf.Ticker("SPY").history(period="2d")
+                    if len(_spy) >= 2:
+                        _spy_chg = (_spy["Close"].iloc[-1] - _spy["Close"].iloc[-2]) / _spy["Close"].iloc[-2] * 100
+                        if _spy_chg <= -1.0:
+                            logger.info(f"SPY {_spy_chg:.2f}% <= -1%, pozisyon acilmiyor")
+                            event_store.save_decision(decision)
+                            queue_manager.mark_analyzed(ticker)
+                            continue
+                    # Gunluk zarar limiti
+                    from database.db import get_connection as _gc
+                    _conn = _gc()
+                    _pos = _conn.execute("SELECT entry_price, current_price, size_pct FROM positions WHERE status='open'").fetchall()
+                    _conn.close()
+                    _daily_pnl = sum(10000*((r[2]*100 if r[2]<1.0 else r[2])/100)*((r[1]-r[0])/r[0]) for r in _pos if r[0]>0)
+                    if _daily_pnl <= -200:
+                        logger.info(f"Gunluk zarar -200$ asild ({_daily_pnl:.0f}$), pozisyon acilmiyor")
+                        event_store.save_decision(decision)
+                        queue_manager.mark_analyzed(ticker)
+                        continue
                     # Max pozisyon kontrolu
                     open_count = len(position_manager.get_open_positions())
                     if open_count >= 20:
