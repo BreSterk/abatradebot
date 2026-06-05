@@ -126,7 +126,8 @@ async def analysis_loop(queue_manager, event_store):
                 logger.info(f"  Neden WAIT: {decision.wait_reason}")
 
             # BUY kararında pozisyon aç
-            if decision.decision == "BUY" and decision.conviction >= 0.65:
+            EXCLUDED = {"SPY", "QQQ", "IWM", "DIA", "VTI", "VOO"}
+            if decision.decision == "BUY" and decision.conviction >= 0.65 and ticker not in EXCLUDED:
                 try:
                     # Max pozisyon kontrolu
                     open_count = len(position_manager.get_open_positions())

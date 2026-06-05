@@ -8,7 +8,7 @@ from .models import Signal
 logger = logging.getLogger(__name__)
 from config import settings
 AV_KEY = settings.alphavantage_key
-WATCHLIST = ["AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","SPY","QQQ","T","CARR","BAH","DVN"]
+WATCHLIST = ["AAPL","MSFT","NVDA","SPY","QQQ"]
 
 class AlphaVantageCollector(BaseCollector):
     def __init__(self, queue: asyncio.Queue):
