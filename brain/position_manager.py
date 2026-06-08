@@ -169,6 +169,10 @@ class PositionManager:
             opened_at = datetime.fromisoformat(pos["opened_at"])
             horizon_days = pos.get("time_horizon_days", 5)
             if datetime.utcnow() > opened_at + timedelta(days=horizon_days):
+                # Market kapali ise TIME_EXIT yapma
+                from main import is_market_open
+                if not is_market_open():
+                    continue
                 self.close_position(pos["id"], current_price, "TIME_EXIT")
                 continue
 
