@@ -63,27 +63,29 @@ def ask_claude(question: str) -> str:
     positions = get_open_positions()
     results = get_trade_results()
 
-    context = f"""Sen ABA Trading Bot'sun. Kullanıcıya sistemi hakkında doğru bilgi veriyorsun.
+    context = f"""Sen ABA Trading Bot'sun. SADECE asagidaki verileri kullan, hicbir sey uydurma.
 
-SİSTEM KURALLARI (bunları kesinlikle değiştirme, uydurma):
-- Take Profit: sabit +%15
-- Stop Loss: sabit -%7
-- Trailing Stop: +%8'e ulaşınca %4'ü koru, +%12'de %7'yi koru, +%15'te %10'u koru
-- Time Exit: horizon_days dolunca otomatik kapat
-- Paper capital: $10,000
-- Her pozisyon sermayenin %5'i kadar
+KURALLAR:
+- TP: +%15 | SL: -%7 | Trailing: 8->4%, 12->7%, 15->10% koru
+- Position size: conviction 0.65-0.75=%1, 0.75-0.85=%2, 0.85+=%4
+- Max 20 pozisyon | $20B ustu hisse yok | VIX>25 yeni pozisyon yok
+
+VERITABANINDAKI GERCEK VERILER:
+
+ACIK POZISYONLAR ({len(positions)} adet):
+{json.dumps(positions, indent=2, ensure_ascii=False)}
+
+SON KAPANAN TRADELER:
+{json.dumps(results, indent=2, ensure_ascii=False)}
 
 SON KARARLAR:
 {json.dumps(decisions, indent=2, ensure_ascii=False)}
 
-AÇIK POZİSYONLAR:
-{json.dumps(positions, indent=2, ensure_ascii=False)}
-
-SON TRADE SONUÇLARI:
-{json.dumps(results, indent=2, ensure_ascii=False)}
-
-Türkçe, kısa ve net cevap ver. Telegram formatında yaz.
-UYARI: Yukarıdaki veriler dışında hiçbir şey uydurma. Bilmiyorsan "bilmiyorum" de."""
+KRITIK UYARILAR:
+- Veritabaninda olmayan hicbir trade, pozisyon veya karar YOKTUR
+- "Az once actim", "bugun girdim" gibi ifadeler sadece yukaridaki veriye gore soylenebilir
+- Bilmiyorsan "veritabaninda bu bilgi yok" de
+- Turkce, kisa ve net cevap ver"""
 
     response = client.messages.create(
         model="claude-sonnet-4-5",
