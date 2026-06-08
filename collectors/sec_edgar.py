@@ -9,28 +9,28 @@ logger = logging.getLogger(__name__)
 
 # Item numaralarına göre önem skoru
 ITEM_SCORES = {
-    "1.01": 0.85,  # Material Definitive Agreement
-    "1.02": 0.80,  # Termination of Material Agreement
-    "1.03": 0.80,  # Bankruptcy
-    "2.01": 0.85,  # Acquisition/Disposition
-    "2.02": 0.90,  # Results of Operations (Earnings)
-    "2.03": 0.75,  # Direct Financial Obligation
-    "2.04": 0.80,  # Triggering Events
-    "2.05": 0.80,  # Cost Associated with Exit
-    "2.06": 0.85,  # Material Impairment
-    "3.01": 0.70,  # Delisting Notice
-    "3.02": 0.70,  # Unregistered Sales
-    "4.01": 0.75,  # Auditor Change
-    "4.02": 0.75,  # Non-Reliance on Financial Statements
-    "5.01": 0.80,  # Change in Control
-    "5.02": 0.75,  # Director/Officer Change
-    "5.03": 0.70,  # Amendment to Charter
-    "5.07": 0.65,  # Shareholder Vote
-    "5.08": 0.70,  # Reverse Stock Split
-    "6.01": 0.65,  # ABS Informational
-    "7.01": 0.45,  # Regulation FD Disclosure (zayıf)
-    "8.01": 0.45,  # Other Events (zayıf)
-    "9.01": 0.50,  # Financial Statements
+    "1.01": 0.90,  # Material Definitive Agreement - EN GUCLU
+    "1.02": 0.75,  # Termination of Material Agreement
+    "1.03": 0.70,  # Bankruptcy
+    "2.01": 0.88,  # Acquisition/Disposition
+    "2.02": 0.65,  # Earnings - dusuruldu, cok spekulatif
+    "2.03": 0.70,  # Direct Financial Obligation
+    "2.04": 0.72,  # Triggering Events
+    "2.05": 0.65,  # Cost Associated with Exit
+    "2.06": 0.75,  # Material Impairment
+    "3.01": 0.55,  # Delisting Notice
+    "3.02": 0.55,  # Unregistered Sales
+    "4.01": 0.60,  # Auditor Change
+    "4.02": 0.60,  # Non-Reliance on Financial Statements
+    "5.01": 0.82,  # Change in Control
+    "5.02": 0.60,  # Director/Officer Change - dusuruldu
+    "5.03": 0.55,  # Amendment to Charter
+    "5.07": 0.50,  # Shareholder Vote
+    "5.08": 0.55,  # Reverse Stock Split
+    "6.01": 0.50,  # ABS Informational
+    "7.01": 0.35,  # Regulation FD - cok zayif
+    "8.01": 0.35,  # Other Events - cok zayif
+    "9.01": 0.45,  # Financial Statements
 }
 
 ITEM_NAMES = {
