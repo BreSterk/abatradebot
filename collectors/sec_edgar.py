@@ -154,6 +154,12 @@ class SECEdgarCollector(BaseCollector):
             except Exception as e:
                 logger.debug(f"Filing text hatasi: {e}")
 
+            # ATM offering / equity dilution filtresi
+            negative_kw = ["at-the-market", "atm offering", "equity distribution agreement", "prospectus supplement", "underwriting agreement", "equity offering", "stock offering"]
+            if any(kw in (filing_text or "").lower() for kw in negative_kw):
+                logger.info(f"SEC: {ticker} ATM/dilution tespit edildi, atlaniyor")
+                continue
+
             raw_text = f"{form_type} filing: {company}"
             if item_desc:
                 raw_text += f"\nKonu: {item_desc}"
