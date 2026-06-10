@@ -8,7 +8,7 @@ MIN_AVG_DOLLAR_VOLUME = 5_000_000
 MIN_MARKET_CAP = 500_000_000
 FDA_BIOTECH_ENABLED = False
 
-BIOTECH_KEYWORDS = ["therapeutics", "biotech", "pharma", "biopharma", "biosciences"]
+BIOTECH_KEYWORDS = ["therapeutics", "biotech", "pharma", "biopharma", "biosciences", "cervomed", "oncology", "clinical", "trial", "therapeut"]
 
 def is_biotech(ticker: str, company: str = "") -> bool:
     company_lower = company.lower()
