@@ -46,6 +46,7 @@ Final kararını ver.
                 clean = clean.split("```")[1]
                 if clean.startswith("json"):
                     clean = clean[4:]
+                clean = clean.strip()
 
             data = json.loads(clean)
 
