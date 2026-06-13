@@ -173,8 +173,15 @@ async def analysis_loop(queue_manager, event_store):
 
                             ticker_info = yf.Ticker(ticker).info
                             market_cap = ticker_info.get("marketCap", 0) or 0
-                            if market_cap > 20_000_000_000:
-                                logger.info(f"{ticker} ${market_cap/1e9:.0f}B > $20B, atlaniyor")
+                            avg_vol = ticker_info.get("averageVolume", 0) or 0
+                            price = ticker_info.get("currentPrice", 1) or 1
+                            dollar_vol = avg_vol * price
+                            if market_cap > 5_000_000_000:
+                                logger.info(f"{ticker} ${market_cap/1e9:.1f}B > $5B, atlaniyor")
+                            elif market_cap < 200_000_000:
+                                logger.info(f"{ticker} ${market_cap/1e6:.0f}M < $200M, atlaniyor")
+                            elif dollar_vol < 3_000_000:
+                                logger.info(f"{ticker} hacim ${dollar_vol/1e6:.1f}M < $3M, atlaniyor")
                             else:
                                 hist = yf.Ticker(ticker).history(period="1d")
                                 if not hist.empty:
