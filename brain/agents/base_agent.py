@@ -22,7 +22,7 @@ class BaseAgent:
     def call_claude(self, system_prompt: str, user_message: str) -> str:
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-sonnet-4-5",
                 max_tokens=1000,
                 temperature=self.temperature,
                 system=system_prompt,

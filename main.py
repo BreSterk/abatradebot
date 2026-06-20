@@ -251,7 +251,6 @@ async def main():
     from collectors.news_collector import NewsCollector
     from collectors.alphavantage_collector import AlphaVantageCollector
     from collectors.uspto_collector import USPTOCollector
-    from collectors.senate_trades import SenateTradesCollector
 
     sec = SECEdgarCollector(queue)
     fed = FedFomcCollector(queue)
@@ -260,7 +259,6 @@ async def main():
     news = NewsCollector(queue)
     av = AlphaVantageCollector(queue)
     uspto = USPTOCollector(queue)
-    senate = SenateTradesCollector(queue)
 
     logger.info("Tüm collector'lar başlatıldı")
 
@@ -272,7 +270,6 @@ async def main():
         news.run(interval_seconds=300),
         av.run(interval_seconds=300),
         uspto.run(interval_seconds=3600),
-        senate.run(interval_seconds=3600),
         queue_listener(queue, queue_manager, event_store),
         analysis_loop(queue_manager, event_store)
     )
